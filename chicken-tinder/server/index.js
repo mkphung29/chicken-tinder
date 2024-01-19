@@ -29,7 +29,7 @@ app.route('/api/yelp/:city')
   .get(async (req, res) => {
     try {
       const { city } = req.params;
-      const YELP_API_KEY = 'dSY2LQiIcIS28Vb_Do_DEw8l2lUXWGyr9aRvtsYsHtccfbQ3f2MHRcMyegAg2cIjL1ibJ4fupuf2LHMb-Cu0AzaQFffpKw1Fzy35wpDRfBb9jsIk57D8xe6ysYiMZXYx';
+      const YELP_API_KEY = 'process.env.YELP_API_KEY';
 
       const response = await axios.get(`https://api.yelp.com/v3/businesses/search`, {
         headers: {
