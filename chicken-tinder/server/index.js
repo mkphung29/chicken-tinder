@@ -1,19 +1,90 @@
-const PORT = 8000
-const express = require('express')
-const { MongoClient } = require('mongodb')
-const { v4: uuidv4 } = require('uuid')
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
-const cors = require('cors')
-const { searchYelp } = require('./yelpAPI'); 
-require('dotenv').config()
-
+const PORT = 8000;
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cors = require('cors'); // Add cors middleware
+const axios = require('axios');
+require('dotenv').config();
 
 const uri = 'mongodb+srv://maddykay396:dB5eF7zLX1xsV1Rj@cluster0.gkhmnx2.mongodb.net/?retryWrites=true&w=majority';
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const app = express();
+
+// Configure cors middleware
+const corsOptions = {
+    origin: 'http://localhost:3000',  // Replace with the actual origin of your frontend
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+  };
+  
+app.use(cors(corsOptions));
+
+app.use(express.json());
+
+// Handle YELP API requests
+app.route('/api/yelp/:city')
+  .get(async (req, res) => {
+    try {
+      const { city } = req.params;
+      const YELP_API_KEY = 'dSY2LQiIcIS28Vb_Do_DEw8l2lUXWGyr9aRvtsYsHtccfbQ3f2MHRcMyegAg2cIjL1ibJ4fupuf2LHMb-Cu0AzaQFffpKw1Fzy35wpDRfBb9jsIk57D8xe6ysYiMZXYx';
+
+      const response = await axios.get(`https://api.yelp.com/v3/businesses/search`, {
+        headers: {
+          Authorization: `Bearer ${YELP_API_KEY}`,
+        },
+        params: {
+          location: city,
+          term: 'restaurants',
+        },
+      });
+
+      const businesses = response.data.businesses;
+      res.json(businesses);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      const { city } = req.params;
+      const YELP_API_KEY = 'dSY2LQiIcIS28Vb_Do_DEw8l2lUXWGyr9aRvtsYsHtccfbQ3f2MHRcMyegAg2cIjL1ibJ4fupuf2LHMb-Cu0AzaQFffpKw1Fzy35wpDRfBb9jsIk57D8xe6ysYiMZXYx';
+
+      const response = await axios.get(`https://api.yelp.com/v3/businesses/search`, {
+        headers: {
+          Authorization: `Bearer ${YELP_API_KEY}`,
+        },
+        params: {
+          location: city,
+          term: 'restaurants',
+        },
+      });
+
+      const businesses = response.data.businesses;
+      res.json(businesses);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Add this route to handle creating matched restaurants
+app.post('/api/create-restaurant', async (req, res) => {
+    const { restaurantData, userId } = req.body;
+    const query = { user_id: userId };
+    const updateDocument = {
+    $push: {
+        matches: {
+        restaurant: restaurantData,
+        date: new Date(),
+        },
+    },
+    };
+    const result = await users.updateOne(query, updateDocument);
+});
 
 // Default
 app.get('/', (req, res) => {
@@ -62,6 +133,19 @@ app.post('/signup', async (req, res) => {
         await client.close()
     }
 })
+
+// Fetch a user's matches
+app.get('/api/get-matches/:userId', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const user = await users.findOne({ _id: userId });
+      res.json(user.matches);
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 // Login in to the database DON'T CHANGE
 app.post('/login', async (req, res) => {
@@ -114,55 +198,7 @@ app.get('/user', async (req, res) => {
     }
 })
 
-// Get restaurants from Yelp API
-app.get('/get-restaurants', async (req, res) => {
-    const { location, term } = req.query;
 
-    try{
-        // Make a request to Yelp API to get restuarnats
-        // Use the 'location' and 'term' parameters as needed
-        const response = await searchYelp(term, location)
-
-        const restaurants = response.map(restaurant => ({
-            restaurant_id: restaurant.id,
-            name: restaurant.name,
-            location: restaurant.location.address1,
-            phone_number: restaurant.display_phone,
-            price: restaurant.price,
-            isClosed: restaurant.is_closed,
-            image_url: restaurant.image_url,
-            categories: restaurant.categories.map(category => category.title),
-            rating: restaurant.rating,
-        }));
-
-        res.json(restaurants)
-
-    } catch (error){
-        console.log(error);
-        res.status(500).json({error: 'Internal Server Error'});
-    }
-})
-
-// POST the restaurant into the database once the user matches with it
-app.post('/create-restaurant', async (req, res) => {
-    const { restaurantData, userId } = req.body
-    const client = new MongoClient(uri);
-
-    try{
-        await client.connect()
-        const database = client.db('app-data')
-        const restaurants = database.collection('restaurants')
-
-        const result = await restaurants.insertOne(restaurantData);
-
-        res.status(201).json({message: "Restaurant created successfully", restaurantId: result.insertedId})
-    }catch (error){
-        console.error('Error creating restaurant: ', error)
-        res.status(500).json({error: 'Internal Server Error'})
-    } finally {
-        await client.close()
-    }
-})
 
 // Update a user in the database through onboarding 
 app.put('/user', async (req, res) => {
@@ -198,6 +234,29 @@ app.put('/user', async (req, res) => {
     }
 })
 
+// Get user's restaurants from the database
+app.get('/user-restaurants', async (req, res) => {
+    const userId = req.query.userId;
+
+    try {
+        const client = new MongoClient(uri)
+        await client.connect()
+
+        const database = client.db('app-data')
+        const restaurants = database.collection('restaurants')
+
+        const userRestaurants = await restaurants.find({user_id: userId}.toArray())
+
+        res.json(userRestaurants)
+    }catch (error){
+        console.log(error)
+        res.status(500).json({error: 'Internal Server Error'})
+    } finally{
+        await client.close()
+    }
+})
+
+
 // Update user with a match to a restaurant
 app.put('/addmatch', async (req, res) => {
     const client = new MongoClient(uri);
@@ -225,52 +284,5 @@ app.put('/addmatch', async (req, res) => {
     }
 });
 
-/*
-// Get all users by userIds in the database
-app.get('/users', async (req, res) => {
-    const client = new MongoClient(uri)
-    const userIds = JSON.parse(req.query.userIds)
-
-    try {
-        await client.connect()
-        const database = client.db('app-data')
-        const users = database.collection('users')
-
-        const pipeline =
-            [
-                {
-                    '$match': {
-                        'user_id': {
-                            '$in': userIds
-                        }
-                    }
-                }
-            ]
-
-        const foundUsers = await users.aggregate(pipeline).toArray()
-
-        res.json(foundUsers)
-
-    } finally {
-        await client.close()
-    }
-})*/
-
-// Add a review to our Database
-app.post('/message', async (req, res) => {
-    const client = new MongoClient(uri)
-    const message = req.body.message
-
-    try {
-        await client.connect()
-        const database = client.db('app-data')
-        const messages = database.collection('messages')
-
-        const insertedMessage = await messages.insertOne(message)
-        res.send(insertedMessage)
-    } finally {
-        await client.close()
-    }
-})
 
 app.listen(PORT, () => console.log("Server running on PORT " + PORT))
