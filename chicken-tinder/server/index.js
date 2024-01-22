@@ -8,7 +8,7 @@ const cors = require('cors'); // Add cors middleware
 const axios = require('axios');
 require('dotenv').config();
 
-const uri = 'mongodb+srv://maddykay396:dB5eF7zLX1xsV1Rj@cluster0.gkhmnx2.mongodb.net/?retryWrites=true&w=majority';
+const uri = 'process.env.URL';
 
 const app = express();
 

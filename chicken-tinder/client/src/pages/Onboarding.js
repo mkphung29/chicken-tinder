@@ -8,13 +8,13 @@ const Onboarding = () => {
     const [cookies, setCookie, removeCookie] = useCookies(null)
     const [formData, setFormData] = useState({
         user_id: "",
-        first_name: '',
-        dob_day: '',
-        dob_month: '',
-        dob_year: '',
-        email: '',
-        url: '',
-        about: '',
+        first_name: "",
+        dob_day: "",
+        dob_month: "",
+        dob_year: "",
+        email: "",
+        url: "",
+        about: "",
         matches: [],
         gender_identity: 'woman',
     })
@@ -29,7 +29,7 @@ const Onboarding = () => {
             console.log(response)
 
             const success = response.status === 200
-            if (success) navigate('/dashboard')
+            if (success) navigate('/discovery')
         } catch (err) {
             console.log(err)
         }

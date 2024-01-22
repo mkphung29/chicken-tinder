@@ -17,6 +17,7 @@ const Discovery = () => {
         setPrice(selectedPrice);
     };
 
+
     const handleMatch = async (restaurant) => {
         try {
           await fetch('http://localhost:8000/api/create-restaurant', {
@@ -28,7 +29,7 @@ const Discovery = () => {
           });
       
           // Fetch updated matches after a match is created
-          fetchMatches();
+          //fetchRestaurants();
         } catch (error) {
           console.error('Error matching restaurant:', error);
         }

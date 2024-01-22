@@ -44,7 +44,6 @@ const Matches = () => {
             {matches.map((match, index) => (
                 <div className="items" key={index}>
                 <RestaurantItem restaurant={match.restaurant} />
-                {/* You can also display the match date or other details */}
                 </div>
             ))}
         </div>
