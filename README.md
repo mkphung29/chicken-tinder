@@ -6,7 +6,7 @@ Chicken Tinder is a web app that allows users to discover restaurants in the NYC
 
 First, users can either sign up or log into into their account. If users need to create an account, they will be taken to an onboarding page where they can fill out their basic account information. 
 
-Then, users can start "swiping"! Users can browse through a list of restaurants in a particular city or within a price point and "swipe" right on restaurants that interest them. Restaurants that users swipe right on appear in their match history. 
+Then, users can start "swiping"! Users can browse through a list of restaurants in a particular city or within a price point and "swipe" right on restaurants that interest them. 
 
 ## Features
 - Integration with Yelp API to fetch and display restaurant data
@@ -16,6 +16,9 @@ Then, users can start "swiping"! Users can browse through a list of restaurants 
 - Utilizes cookies to remember user login information
 - MongoDB Atlas stores user and restaurant data
 - bcrypt hashes user passwords
+
+## Demo
+Here is the link to the demo: https://www.youtube.com/watch?v=H_DJQWap8pg
 
 ## List of what I used
 Frontend: 

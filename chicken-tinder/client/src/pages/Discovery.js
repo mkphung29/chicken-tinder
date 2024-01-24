@@ -10,8 +10,6 @@ const Discovery = () => {
     const [city, setCity] = useState("New York");
     const [price, setPrice] = useState("");
 
-    
-
     const handleSearch = (selectedCity, selectedPrice) => {
         setCity(selectedCity);
         setPrice(selectedPrice);
@@ -25,7 +23,7 @@ const Discovery = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ restaurantData: restaurant, userId: 'user_id_here' }),
+            body: JSON.stringify({ restaurantData: restaurant, userId: 'userId' }),
           });
       
           // Fetch updated matches after a match is created

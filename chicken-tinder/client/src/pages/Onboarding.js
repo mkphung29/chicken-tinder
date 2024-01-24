@@ -44,6 +44,7 @@ const Onboarding = () => {
 
         setFormData((prevState) => ({
             ...prevState,
+            matches: [],
             [name] : value
         }))
     }

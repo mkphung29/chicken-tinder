@@ -2,27 +2,44 @@ import React, { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import SideBar from '../components/SideBar';
 import RestaurantItem from '../components/RestaurantItem';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 
 const Matches = () => {
 
     const [matches, setMatches] = useState([]);
 
+    const { userId } = useParams();
+
+    // Fetch user information 
+    useEffect(() => {
+        const fetchUserData = async () => {
+          try {
+            const response = await axios.get(`http://localhost:8000/user/${userId}`);
+            const userData = response.data;
+            // You can use userData if needed
+          } catch (error) {
+            console.error('Error fetching user data:', error);
+          }
+        };
+    
+        fetchUserData();
+    }, [userId]);
+
     const fetchMatches = async () => {
         try {
-        const response = await fetch(`http://localhost:8000/api/get-matches/user_id_here`);
-        const data = await response.json();
-        setMatches(data);
+            const response = await fetch(`http://localhost:8000/api/get-matches/${userId}`);
+            const data = await response.json();
+            setMatches(data);
         } catch (error) {
-        console.error('Error fetching matches:', error);
+            console.error('Error fetching matches:', error);
         }
     };
 
     useEffect(() => {
         fetchMatches();
-    }, []);
-
-    
+    }, [userId]);
 
     return (
         <div>

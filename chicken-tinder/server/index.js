@@ -8,7 +8,7 @@ const cors = require('cors'); // Add cors middleware
 const axios = require('axios');
 require('dotenv').config();
 
-const uri = 'process.env.URL';
+const uri = process.env.URL;
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.route('/api/yelp/:city')
   .get(async (req, res) => {
     try {
       const { city } = req.params;
-      const YELP_API_KEY = 'process.env.YELP_API_KEY';
+      const YELP_API_KEY = process.env.YELP_API_KEY;
 
       const response = await axios.get(`https://api.yelp.com/v3/businesses/search`, {
         headers: {
@@ -71,19 +71,39 @@ app.route('/api/yelp/:city')
     }
 });
 
-// Add this route to handle creating matched restaurants
+// Update user with a match to a restaurant
 app.post('/api/create-restaurant', async (req, res) => {
     const { restaurantData, userId } = req.body;
-    const query = { user_id: userId };
-    const updateDocument = {
-    $push: {
-        matches: {
-        restaurant: restaurantData,
-        date: new Date(),
-        },
-    },
-    };
-    const result = await users.updateOne(query, updateDocument);
+
+    try {
+        const query = { user_id: userId };
+        const updateDocument = {
+            $push: {
+                matches: {
+                    restaurant: restaurantData,
+                    date: new Date(),
+                },
+            },
+        };
+
+        const result = await users.updateOne(query, updateDocument);
+        res.json({ message: "Restaurant added to matches successfully", result });
+    } catch (error) {
+        console.error('Error adding restaurant to matches:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Fetch user's matches
+app.get('/api/get-matches/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await users.findOne({ user_id: userId });
+        res.json(user.matches);
+    } catch (error) {
+        console.error('Error fetching matches:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Default
@@ -115,8 +135,16 @@ app.post('/signup', async (req, res) => {
 
         const data = {
             user_id: generatedUserId,
+            hashed_password: hashedPassword,
+            first_name: "",
+            dob_day: null,
+            dob_month: null,
+            dob_year: null,
             email: sanitizedEmail,
-            hashed_password: hashedPassword
+            url: "",
+            about: "",
+            matches: [],
+            gender_identity: ""
         }
 
         const insertedUser = await users.insertOne(data)
@@ -203,7 +231,7 @@ app.get('/user', async (req, res) => {
 // Update a user in the database through onboarding 
 app.put('/user', async (req, res) => {
     const client = new MongoClient(uri)
-    const formData = req.body.formData
+    const formData = req.body
 
     try {
         await client.connect()

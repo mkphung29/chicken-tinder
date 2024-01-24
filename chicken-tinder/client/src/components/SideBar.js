@@ -9,9 +9,6 @@ const SideBar = () => {
                 <Link to="/discovery">Discovery</Link>
             </div>
             <div className="tab">
-                <Link to="/matches">Matches</Link>
-            </div>
-            <div className="tab">
                 <Link to="/">Sign Out</Link>
             </div>
         </div>
